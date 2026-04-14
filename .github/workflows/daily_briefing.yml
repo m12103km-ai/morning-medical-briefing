@@ -1,4 +1,4 @@
-name: 毎朝の医療情報ブリーフィング生成
+name: Daily Medical Briefing
 
 on:
   schedule:
@@ -11,28 +11,27 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: リポジトリをチェックアウト
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Python 3.11 をセットアップ
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: ブリーフィングを生成
+      - name: Generate briefing
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
         run: python generate_briefing.py
 
-      - name: 生成結果を確認してコミット
+      - name: Commit and push
         run: |
-          echo "=== feed.jsonの内容 ==="
+          echo "=== feed.json ==="
           cat docs/feed.json
-          echo "======================"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/feed.json
           git status
-          git commit -m "chore: $(date '+%Y-%m-%d') ブリーフィング更新" || echo "変更なし"
-          git push || echo "プッシュ不要"
+          git commit -m "update briefing $(date '+%Y-%m-%d')" || echo "no changes"
+          git push || echo "nothing to push"
