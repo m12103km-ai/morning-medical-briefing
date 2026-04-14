@@ -1,4 +1,31 @@
-- name: 生成結果を確認してコミット
+name: 毎朝の医療情報ブリーフィング生成
+
+on:
+  schedule:
+    - cron: "30 20 * * *"
+  workflow_dispatch:
+
+jobs:
+  generate-briefing:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: ブリーフィングを生成
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+        run: python generate_briefing.py
+
+      - name: 生成結果を確認してコミット
         run: |
           echo "=== feed.jsonの内容 ==="
           cat docs/feed.json
